@@ -7,7 +7,7 @@ import torch.nn as nn
 from transformers import AutoModelForMaskedLM
 import torch.nn.functional as F
 from transformers import WEIGHTS_NAME, CONFIG_NAME, AutoTokenizer
-from util import accuracy_score
+from sklearn.metrics import accuracy_score
 from pytorch_pretrained_bert.optimization import BertAdam
 import math
 
