@@ -4,7 +4,6 @@ from data import Data
 from model import BertForModel, PretrainModelManager
 import numpy as np
 import torch.nn.functional as F
-# from cuml import KMeans
 from util import clustering_score
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 import torch
@@ -13,7 +12,6 @@ from transformers import logging, AutoTokenizer, WEIGHTS_NAME
 import random
 from scipy.spatial import distance as dist
 from scipy.optimize import linear_sum_assignment
-from tqdm import tqdm
 from pytorch_pretrained_bert.optimization import BertAdam
 import math
 import warnings
@@ -64,7 +62,7 @@ class ModelManager:
         model.eval()
         total_features = torch.empty((0,args.feat_dim)).to(self.device)
         total_labels = torch.empty(0,dtype=torch.long).to(self.device)
-        for batch in tqdm(dataloader, desc="Extracting representation"):
+        for _, batch in enumerate(dataloader):
             batch = tuple(t.to(self.device) for t in batch)
             input_ids, input_mask, segment_ids, label_ids = batch
             with torch.no_grad():
@@ -164,11 +162,12 @@ class ModelManager:
         pro_u = pro_l + pro_u   
         proto_u = torch.tensor(np.array(pro_u)).to(self.device)
         
-        # update cluster_ids for unlabele data
+        # update cluster_ids for unlabeled data
         self.centroids = proto_u
-        labelediter = iter(data.train_labeled_dataloader)
         pseudo_labels = self.alignment(km, args)
         train_dataloader = self.update_cluster_ids(pseudo_labels, args, data)
+        
+        labelediter = iter(data.train_labeled_dataloader)
         
         self.proto_l = proto_l
         self.proto_u = proto_u
@@ -194,21 +193,21 @@ class ModelManager:
             nb_tr_examples, nb_tr_steps = 0, 0
             self.model.train()   
 
-            for batch in tqdm(train_dataloader, desc="Prototypical training"):
+            for _, batch in enumerate(train_dataloader):
                 batch = tuple(t.to(self.device) for t in batch)
                 input_ids, input_mask, segment_ids, label_ids = batch
-
                 pooled = self.model(input_ids, segment_ids, input_mask, label_ids, mode='feature_extract')
-                sim_mat = torch.matmul(pooled, self.proto_u.T) / args.temperature
-                s_dist = F.softmax(sim_mat, dim=0)
+
+                sim_mat = self.pairwise_cosine_sim(pooled, self.proto_u) / args.temperature
+                s_dist = F.softmax(sim_mat, dim=1)
                 cost_mat = self.EuclideanDistances(pooled, self.proto_u)
-                loss_u = (cost_mat * s_dist).sum(0).mean()
+                loss_u = (cost_mat * s_dist).sum(1).mean()
 
                 mask = torch.where(label_ids < len(self.proto_l), 1, 0).reshape((-1,1))
-                sim_mat = torch.matmul(pooled, torch.tensor(self.proto_l).T.float().cuda()) / args.temperature
-                s_dist = F.softmax(sim_mat, dim=0)
-                cost_mat = self.pairwise_cosine_dist(pooled, torch.tensor(self.proto_l).float().cuda())
-                loss_l = (cost_mat * s_dist * mask).sum(0).mean()
+                sim_mat = self.pairwise_cosine_sim(pooled, torch.tensor(self.proto_l).float().cuda()) / args.temperature
+                s_dist = F.softmax(sim_mat, dim=1)
+                cost_mat = 1 - self.pairwise_cosine_sim(pooled, torch.tensor(self.proto_l).float().cuda())
+                loss_l = (cost_mat * s_dist * mask).sum(1).mean()
 
                 loss_pro = loss_u + args.gamma * loss_l
                 
@@ -220,10 +219,10 @@ class ModelManager:
                 batch = tuple(t.to(self.device) for t in batch)
                 input_ids, input_mask, segment_ids, label_ids = batch
                 loss_ce, _ = self.model(input_ids, segment_ids, input_mask, label_ids, mode='train') 
-                
+
                 loss = loss_pro + loss_ce
-                loss.backward()
                 
+                loss.backward()
                 tr_loss += loss.item()
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
@@ -231,6 +230,7 @@ class ModelManager:
                 self.optimizer.step()
                 self.optimizer.zero_grad()
             
+            # self.evaluation(args, data)
             print('Epoch ' + str(epoch) + ' loss:' + str(tr_loss/nb_tr_steps))
               
     def load_pretrained_model(self):
@@ -250,10 +250,10 @@ class ModelManager:
             if "encoder.layer.11" in name or "pooler" in name or "encoder.layer.10" in name or "encoder.layer.9" in name:
                 param.requires_grad = True
 
-    def pairwise_cosine_dist(self, x, y):
+    def pairwise_cosine_sim(self, x, y):
         x = F.normalize(x, p=2, dim=1)
         y = F.normalize(y, p=2, dim=1)
-        return 1 - torch.matmul(x, y.T)
+        return torch.matmul(x, y.T)
 
     def EuclideanDistances(self, a, b):
         sq_a = a**2

@@ -13,10 +13,14 @@ class Data:
         self.set_seed(args.seed)
         max_seq_lengths = {'clinc':30, 'stackoverflow':45, 'banking':55}
         train_epochs = {'clinc':80, 'stackoverflow':10, 'banking':60}
+        gamma_list = {'clinc':10, 'stackoverflow':90, 'banking':10}
+        
         args.max_seq_length = max_seq_lengths[args.dataset]
         args.num_train_epochs = train_epochs[args.dataset]
+        args.gamma = gamma_list[args.dataset]
 
         args.pretrain_dir = 'model_' + args.dataset + '_' + str(args.seed)
+        
 
         processor = DatasetProcessor()
         self.data_dir = os.path.join(args.data_dir, args.dataset)

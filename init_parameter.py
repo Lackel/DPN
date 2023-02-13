@@ -6,7 +6,7 @@ def init_model():
     parser.add_argument("--data_dir", default='data', type=str,
                         help="The input data dir. Should contain the .csv files (or other data files) for the task.")
     
-    parser.add_argument("--pretrain_dir", default='./pretrain_models_bank_0', type=str, 
+    parser.add_argument("--pretrain_dir", default='./model_stackoverflow_0', type=str, 
                         help="The output directory where the model predictions and checkpoints will be written.") 
     
     parser.add_argument("--bert_model", default="bert-base-uncased", type=str, help="The path for the pre-trained bert model.")
@@ -28,14 +28,13 @@ def init_model():
     parser.add_argument("--dataset", default=None, type=str, required=True, 
                         help="The name of the dataset to train selected.")
     
-    parser.add_argument("--momentum_factor", default=0.999, type=float, help="The weighting factor of the EMA updating for labeled prototypes.")
+    parser.add_argument("--momentum_factor", default=0.9, type=float, help="The weighting factor of the EMA updating for labeled prototypes.")
 
-    parser.add_argument("--temperature", default=0.1, type=float,
+    parser.add_argument("--temperature", default=0.07, type=float,
                         help="The temperature for dot product.")
 
     parser.add_argument("--known_cls_ratio", default=0.75, type=float, required=True, help="The number of known classes.")
 
-    parser.add_argument("--gamma", default=1, type=float, help="The weighting factor for regularization loss.")
     
     parser.add_argument("--cluster_num_factor", default=1.0, type=float, required=True, help="The factor (magnification) of the number of clusters K.")
 
@@ -43,7 +42,7 @@ def init_model():
 
     parser.add_argument("--labeled_ratio", default=0.1, type=float, help="The ratio of labeled samples in the training set.")
     
-    parser.add_argument("--gpu_id", type=str, default='3', help="Select the GPU id.")
+    parser.add_argument("--gpu_id", type=str, default='0', help="Select the GPU id.")
 
     parser.add_argument("--train_batch_size", default=256, type=int,
                         help="Batch size for training.")
