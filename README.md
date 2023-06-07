@@ -41,7 +41,7 @@ Our model mainly contains five steps: Representation Learning, Prototype Learnin
 ## Running
 Pre-training, training and testing our model through the bash scripts:
 ```
-sh scripts/run.sh
+sh run.sh
 ```
 You can also add or change parameters in run.sh (More parameters are listed in init_parameter.py)
 
