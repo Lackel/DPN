@@ -154,7 +154,7 @@ class ModelManager:
         for i in range(len(col_ind)):
             pro_l.append(proto_u[col_ind[i]][:])
         pro_u = []
-        for j in range(data.num_labels):
+        for j in range(self.num_labels):
             if j not in col_ind:
                 pro_u.append(proto_u[j][:])
         
@@ -262,7 +262,26 @@ class ModelManager:
         sum_sq_b = torch.sum(sq_b,dim=1).unsqueeze(0)  # n->[1, n]
         bt = b.t()
         return torch.sqrt(sum_sq_a+sum_sq_b-2*a.mm(bt))
- 
+    
+    def predict_k(self, args, data):
+        feats, _ = self.get_features_labels(data.train_semi_dataloader, self.pretrained_model.cuda(), args)
+        feats = feats.cpu().numpy()
+        km = KMeans(n_clusters = data.num_labels).fit(feats)
+        y_pred = km.labels_
+
+        pred_label_list = np.unique(y_pred)
+        drop_out = len(feats) / data.num_labels * 0.9
+
+        cnt = 0
+        for label in pred_label_list:
+            num = len(y_pred[y_pred == label]) 
+            if num < drop_out:
+                cnt += 1
+
+        num_labels = len(pred_label_list) - cnt
+        print('predict_K', num_labels)
+
+        return num_labels
 
 if __name__ == '__main__':
     warnings.filterwarnings('ignore')
