@@ -61,10 +61,7 @@ If our paper or code is helpful to you, please consider citing our paper:
 @inproceedings{an2023generalized,
   title={Generalized category discovery with decoupled prototypical network},
   author={An, Wenbin and Tian, Feng and Zheng, Qinghua and Ding, Wei and Wang, QianYing and Chen, Ping},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume={37},
-  number={11},
-  pages={12527--12535},
-  year={2023}
+  journal={arXiv preprint arXiv:2211.15115},
+  year={2022}
 }
 ```
