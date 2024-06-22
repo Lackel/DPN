@@ -18,7 +18,7 @@ Data and code for paper titled [Generalized Category Discovery with Decoupled Pr
 
 [6. Thanks](#thanks)
 
-[6. Citation](#citation)
+[7. Citation](#citation)
 
 ## Data
 We performed experiments on three public datasets: [clinc](https://aclanthology.org/D19-1131/), [banking](https://aclanthology.org/2020.nlp4convai-1.5/) and [stackoverflow](https://aclanthology.org/W15-1509/), which have been included in our repository in the data folder ' ./data '.
@@ -58,10 +58,13 @@ Some code references the following repositories:
 ## Citation
 If our paper or code is helpful to you, please consider citing our paper:
 ```
-@article{andpn,
-  title={Generalized Category Discovery with Decoupled Prototypical Network},
+@inproceedings{an2023generalized,
+  title={Generalized category discovery with decoupled prototypical network},
   author={An, Wenbin and Tian, Feng and Zheng, Qinghua and Ding, Wei and Wang, QianYing and Chen, Ping},
-  journal={arXiv preprint arXiv:2211.15115},
-  year={2022}
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={37},
+  number={11},
+  pages={12527--12535},
+  year={2023}
 }
 ```
